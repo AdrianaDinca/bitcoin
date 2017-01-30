@@ -59,8 +59,13 @@ WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
     usedSendingAddressesPage = new AddressBookPage(platformStyle, AddressBookPage::ForEditing, AddressBookPage::SendingTab, this);
     usedReceivingAddressesPage = new AddressBookPage(platformStyle, AddressBookPage::ForEditing, AddressBookPage::ReceivingTab, this);
 
+    convPage = new QWidget(this);
+    vbox = new QVBoxLayout();
+    convPage->setLayout(vbox);
+
     addWidget(overviewPage);
     addWidget(transactionsPage);
+    addWidget(convPage);
     addWidget(receiveCoinsPage);
     addWidget(sendCoinsPage);
 
@@ -177,6 +182,11 @@ void WalletView::gotoOverviewPage()
 void WalletView::gotoHistoryPage()
 {
     setCurrentWidget(transactionsPage);
+}
+
+void WalletView::gotoConvPage()
+{
+    setCurrentWidget(convPage);
 }
 
 void WalletView::gotoReceiveCoinsPage()
