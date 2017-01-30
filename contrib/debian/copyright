@@ -32,6 +32,7 @@ Files: src/qt/res/icons/add.png
        src/qt/res/icons/lock_*.png
        src/qt/res/icons/open.png
        src/qt/res/icons/overview.png
+       src/qt/res/icons/conv.png
        src/qt/res/icons/quit.png
        src/qt/res/icons/receive.png
        src/qt/res/icons/remove.png
