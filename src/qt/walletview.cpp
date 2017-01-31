@@ -37,6 +37,7 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QDoubleValidator>
+#include <QGroupBox>
 
 WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
     QStackedWidget(parent),
@@ -97,35 +98,57 @@ WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
 }
 void WalletView::createConversionPageGroup(QWidget *convPage) {
 
-    currenciesListWidget = new QComboBox(convPage);
+	QFormLayout *groupLayout = new QFormLayout();
+	groupLayout->setRowWrapPolicy(QFormLayout::DontWrapRows);
+	groupLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+	groupLayout->setFormAlignment(Qt::AlignLeft | Qt::AlignHCenter);
+	groupLayout->setLabelAlignment(Qt::AlignLeft);
+
+	QGroupBox *inputGr = new QGroupBox(convPage);
+
+    currenciesListWidget = new QComboBox(inputGr);
     currenciesListWidget->setFixedWidth(140);
     currenciesListWidget->addItems({"USD", "EUR", "GBP"});
 
-    amountTxt = new QLineEdit();
+    amountTxt = new QLineEdit(inputGr);
     amountTxt->setText("1000.00");
     amountTxt->setValidator( new QDoubleValidator(0, 10000, 2, this) );
-    convButton = new QPushButton("Convert");
-
-    btcAmountTxt = new QLineEdit();
-	btcAmountTxt->setText("no result");
+    convButton = new QPushButton("Convert", inputGr);
 
     QFormLayout *formLayout = new QFormLayout();
-    formLayout->setRowWrapPolicy(QFormLayout::DontWrapRows);
-    formLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
-    formLayout->setFormAlignment(Qt::AlignLeft | Qt::AlignHCenter);
-    formLayout->setLabelAlignment(Qt::AlignLeft);
+	formLayout->setRowWrapPolicy(QFormLayout::DontWrapRows);
+	formLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+	formLayout->setFormAlignment(Qt::AlignLeft | Qt::AlignHCenter);
+	formLayout->setLabelAlignment(Qt::AlignLeft);
 
-    formLayout->addRow(new QLabel(""), new QLabel(""));
-    formLayout->addRow(new QLabel("Convert BTC into a classic currency"), new QLabel(""));
-    formLayout->addRow(new QLabel(""), new QLabel(""));
-    formLayout->addRow(new QLabel("Amount:"), amountTxt);
-    formLayout->addRow(new QLabel("Currency:"), currenciesListWidget);
-    formLayout->addRow(new QLabel(""), convButton);
-    formLayout->addRow(new QLabel(""), new QLabel(""));
+	formLayout->addRow(new QLabel(""), new QLabel(""));
+	formLayout->addRow(new QLabel("Convert BTC into a classic currency"), new QLabel(""));
+	formLayout->addRow(new QLabel(""), new QLabel(""));
+	formLayout->addRow(new QLabel("Amount:"), amountTxt);
+	formLayout->addRow(new QLabel("Currency:"), currenciesListWidget);
+	formLayout->addRow(new QLabel(""), convButton);
+
+	inputGr->setLayout(formLayout);
+
+	QGroupBox *outputGr = new QGroupBox(convPage);
+	formLayout = new QFormLayout();
+	formLayout->setRowWrapPolicy(QFormLayout::DontWrapRows);
+	formLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+	formLayout->setFormAlignment(Qt::AlignLeft | Qt::AlignHCenter);
+	formLayout->setLabelAlignment(Qt::AlignLeft);
+
+    btcAmountTxt = new QLineEdit(outputGr);
+	btcAmountTxt->setText("no result");
+
     formLayout->addRow(new QLabel("Convert rate"), new QLabel(""));
     formLayout->addRow(new QLabel(""), new QLabel(""));
     formLayout->addRow(new QLabel("Result:"), btcAmountTxt);
-    convPage->setLayout(formLayout);
+    formLayout->addRow(new QLabel(""), new QLabel(""));
+    outputGr->setLayout(formLayout);
+
+    groupLayout->addRow(new QLabel(""), inputGr);
+    groupLayout->addRow(new QLabel(""), outputGr);
+    convPage->setLayout(groupLayout);
 }
 
 WalletView::~WalletView()
