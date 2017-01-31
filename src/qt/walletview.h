@@ -9,6 +9,8 @@
 
 #include <QStackedWidget>
 #include <QComboBox>
+#include <QLineEdit>
+#include <QPushButton>
 
 class BitcoinGUI;
 class ClientModel;
@@ -63,6 +65,9 @@ private:
     QWidget *transactionsPage;
     QWidget *convPage;
     QComboBox *currenciesListWidget;
+    QPushButton *convButton;
+    QLineEdit *amountTxt;
+    QLineEdit *btcAmountTxt;
     ReceiveCoinsDialog *receiveCoinsPage;
     SendCoinsDialog *sendCoinsPage;
     AddressBookPage *usedSendingAddressesPage;
@@ -89,7 +94,8 @@ public Q_SLOTS:
     void gotoSignMessageTab(QString addr = "");
     /** Show Sign/Verify Message dialog and switch to verify message tab */
     void gotoVerifyMessageTab(QString addr = "");
-
+    /* create the composite group for conversion */
+    void createConversionPageGroup(QWidget *convPage);
     /** Show incoming transaction notification for new transactions.
 
         The new items are those between start and end inclusive, under the given parent item.
@@ -117,6 +123,8 @@ public Q_SLOTS:
 
     /** User has requested more information about the out of sync state */
     void requestedSyncWarningInfo();
+    /** Update the BTC value for the amount requested */
+    void convertToBTCOnClick();
 
 Q_SIGNALS:
     /** Signal that we want to show the main window */
@@ -131,6 +139,7 @@ Q_SIGNALS:
     void incomingTransaction(const QString& date, int unit, const CAmount& amount, const QString& type, const QString& address, const QString& label);
     /** Notify that the out of sync warning icon has been pressed */
     void outOfSyncWarningClicked();
+
 };
 
 #endif // BITCOIN_QT_WALLETVIEW_H

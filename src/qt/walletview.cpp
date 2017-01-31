@@ -18,8 +18,12 @@
 #include "transactiontablemodel.h"
 #include "transactionview.h"
 #include "walletmodel.h"
-
 #include "ui_interface.h"
+#include "conv/json/json-forwards.h"
+#include "conv/json/json.h"
+#include <iostream>
+#include <string>
+#include <fstream>
 
 #include <QAction>
 #include <QActionGroup>
@@ -28,8 +32,11 @@
 #include <QProgressDialog>
 #include <QPushButton>
 #include <QVBoxLayout>
+#include <QFormLayout>
 #include <QComboBox>
-
+#include <QLineEdit>
+#include <QPushButton>
+#include <QDoubleValidator>
 
 WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
     QStackedWidget(parent),
@@ -62,17 +69,7 @@ WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
     usedReceivingAddressesPage = new AddressBookPage(platformStyle, AddressBookPage::ForEditing, AddressBookPage::ReceivingTab, this);
 
     convPage = new QWidget(this);
-    currenciesListWidget = new QComboBox(convPage);
-    currenciesListWidget->setFixedWidth(120);
-    currenciesListWidget->addItems({"USD", "EUR", "RON"});
-    vbox = new QVBoxLayout();
-    vbox->setContentsMargins(10,10,10,10);
-	vbox->setSpacing(0);
-	vbox->addSpacing(10);
-	vbox->addWidget(new QLabel("Convert from BTC to a classic currency"), 0);
-	vbox->addWidget(new QLabel("Currencies:"), 1);
-    vbox->addWidget(currenciesListWidget, 2);
-    convPage->setLayout(vbox);
+    createConversionPageGroup(convPage);
 
     addWidget(overviewPage);
     addWidget(transactionsPage);
@@ -94,6 +91,41 @@ WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
     connect(sendCoinsPage, SIGNAL(message(QString,QString,unsigned int)), this, SIGNAL(message(QString,QString,unsigned int)));
     // Pass through messages from transactionView
     connect(transactionView, SIGNAL(message(QString,QString,unsigned int)), this, SIGNAL(message(QString,QString,unsigned int)));
+
+    connect(convButton, SIGNAL(clicked()),this, SLOT(convertToBTCOnClick()));
+
+}
+void WalletView::createConversionPageGroup(QWidget *convPage) {
+
+    currenciesListWidget = new QComboBox(convPage);
+    currenciesListWidget->setFixedWidth(140);
+    currenciesListWidget->addItems({"USD", "EUR", "GBP"});
+
+    amountTxt = new QLineEdit();
+    amountTxt->setText("1000.00");
+    amountTxt->setValidator( new QDoubleValidator(0, 10000, 2, this) );
+    convButton = new QPushButton("Convert");
+
+    btcAmountTxt = new QLineEdit();
+	btcAmountTxt->setText("no result");
+
+    QFormLayout *formLayout = new QFormLayout();
+    formLayout->setRowWrapPolicy(QFormLayout::DontWrapRows);
+    formLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+    formLayout->setFormAlignment(Qt::AlignLeft | Qt::AlignHCenter);
+    formLayout->setLabelAlignment(Qt::AlignLeft);
+
+    formLayout->addRow(new QLabel(""), new QLabel(""));
+    formLayout->addRow(new QLabel("Convert BTC into a classic currency"), new QLabel(""));
+    formLayout->addRow(new QLabel(""), new QLabel(""));
+    formLayout->addRow(new QLabel("Amount:"), amountTxt);
+    formLayout->addRow(new QLabel("Currency:"), currenciesListWidget);
+    formLayout->addRow(new QLabel(""), convButton);
+    formLayout->addRow(new QLabel(""), new QLabel(""));
+    formLayout->addRow(new QLabel("Convert rate"), new QLabel(""));
+    formLayout->addRow(new QLabel(""), new QLabel(""));
+    formLayout->addRow(new QLabel("Result:"), btcAmountTxt);
+    convPage->setLayout(formLayout);
 }
 
 WalletView::~WalletView()
@@ -348,4 +380,45 @@ void WalletView::showProgress(const QString &title, int nProgress)
 void WalletView::requestedSyncWarningInfo()
 {
     Q_EMIT outOfSyncWarningClicked();
+}
+
+void WalletView::convertToBTCOnClick() {
+	Json::Value root;   // starts as "null"; will contain the root value ater parsing
+	Json::Reader reader;
+	const std::string currentprice_doc = "currentprice.json";
+
+
+	int get = system ("wget http://api.coindesk.com/v1/bpi/currentprice.json");
+	if (get == -1) {
+		std::cout  << "Error wget currentprice.json \n";
+    	return;
+	}
+
+	std::filebuf fb;
+	if (fb.open ("currentprice.json",std::ios::in))
+	{
+		std::istream is(&fb);
+
+		bool parsingSuccessful = reader.parse( is, root, true );
+		if ( !parsingSuccessful )
+		{
+    		std::cout  << "Failed to parse configuration\n"
+      	        << reader.getFormattedErrorMessages();
+    		return ;
+		}
+
+		fb.close();
+	}
+
+	QString qCurrency = currenciesListWidget->currentText();
+	std::string currency = qCurrency.toUtf8().constData();
+	QString qRate = QString::fromUtf8(root["bpi"][currency]["rate"].asString().c_str());
+	QString qAmount = amountTxt->text();
+
+	double amount = qAmount.toDouble();
+	std::cout << "amount " << amount << std::endl;
+	double rate = qRate.toDouble();
+	double result = amount * rate;
+	QString qResult = QString("%1").arg(result);
+	btcAmountTxt->setText(qResult);
 }
