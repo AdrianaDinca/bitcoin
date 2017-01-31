@@ -8,6 +8,7 @@
 #include "amount.h"
 
 #include <QStackedWidget>
+#include <QComboBox>
 
 class BitcoinGUI;
 class ClientModel;
@@ -61,6 +62,7 @@ private:
     OverviewPage *overviewPage;
     QWidget *transactionsPage;
     QWidget *convPage;
+    QComboBox *currenciesListWidget;
     ReceiveCoinsDialog *receiveCoinsPage;
     SendCoinsDialog *sendCoinsPage;
     AddressBookPage *usedSendingAddressesPage;

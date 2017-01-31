@@ -28,6 +28,8 @@
 #include <QProgressDialog>
 #include <QPushButton>
 #include <QVBoxLayout>
+#include <QComboBox>
+
 
 WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
     QStackedWidget(parent),
@@ -60,7 +62,16 @@ WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
     usedReceivingAddressesPage = new AddressBookPage(platformStyle, AddressBookPage::ForEditing, AddressBookPage::ReceivingTab, this);
 
     convPage = new QWidget(this);
+    currenciesListWidget = new QComboBox(convPage);
+    currenciesListWidget->setFixedWidth(120);
+    currenciesListWidget->addItems({"USD", "EUR", "RON"});
     vbox = new QVBoxLayout();
+    vbox->setContentsMargins(10,10,10,10);
+	vbox->setSpacing(0);
+	vbox->addSpacing(10);
+	vbox->addWidget(new QLabel("Convert from BTC to a classic currency"), 0);
+	vbox->addWidget(new QLabel("Currencies:"), 1);
+    vbox->addWidget(currenciesListWidget, 2);
     convPage->setLayout(vbox);
 
     addWidget(overviewPage);
